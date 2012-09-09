@@ -259,36 +259,3 @@ W_RIGHT = W - W_LEFT - 3
 
 if __name__ == '__main__':
   main()
-
-# git config:
-#
-# normal
-# black
-# red
-# green
-# yellow
-# blue
-# magenta
-# cyan
-# white
-#
-# bold
-# dim
-# ul
-# blink
-# reverse
-#
-# color.branch.current
-# color.branch.local
-# color.branch.remote
-# color.branch.plain
-#
-# color.diff
-# color.diff.plain      (context text)
-# color.diff.meta       (metainformation)
-# color.diff.frag       (hunk header)
-# color.diff.func       (function in hunk header)
-# color.diff.old        (removed lines)
-# color.diff.new        (added lines)
-# color.diff.commit     (commit headers)
-# color.diff.whitespace (highlighting whitespace errors)
