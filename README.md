@@ -37,8 +37,3 @@ No parametrized configuration exists yet. In the script one can adopt the theme:
 # Screenshots
 
 ![Example: Normal](https://github.com/djui/git-ssdiff/raw/master/example_normal.png)
-![Example: None](https://github.com/djui/git-ssdiff/raw/master/example_none.png)
-![Example: None](https://github.com/djui/git-ssdiff/raw/master/example_none.png)
-![Example: Light](https://github.com/djui/git-ssdiff/raw/master/example_Light.png)
-![Example: Dark](https://github.com/djui/git-ssdiff/raw/master/example_dark.png)
-![Example: Bold](https://github.com/djui/git-ssdiff/raw/master/example_bold.png)
