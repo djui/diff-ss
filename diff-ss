@@ -7,7 +7,6 @@ import sys
 
 
 class C:
-    if line.startswith('diff --git'):
     """
     Color enumerator.
     """
@@ -167,6 +166,7 @@ def main(args):
         # Expand tabs
         line = line.rstrip('\n').replace('\t', fixed('', 8))
 
+        if line.startswith('diff '):
             buf = flush(buf)
             cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
         elif line.startswith('new'):
