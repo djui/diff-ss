@@ -4,21 +4,23 @@ Git does not support a side-by-side diff option. This script generates a
 side-by-side git-diff output for terminals. The script uses the maximum terminal
 width for the diff output.
 
+
 # Usage
 
 The tool supports two modes:
 
 * `stdin`: Pipe the git-diff output to the script:
 
-    $ git diff | {PATH}/ssdiff
+    $ git diff | {PATH}/diff-ss
 
-* `GIT_EXTERNAL_DIFF`: 
+* `GIT_EXTERNAL_DIFF`:
 
-    $ GIT_EXTERNAL_DIFF={PATH}/ssdiff git diff
+    $ GIT_EXTERNAL_DIFF={PATH}/diff-ss git diff
 
 or
 
-    $ git difftool --extcmd={PATH}/ssdiff
+    $ git difftool --extcmd={PATH}/diff-ss
+
 
 # Configuration
 
@@ -33,6 +35,7 @@ No parametrized configuration exists yet. In the script one can adopt the theme:
 * **dark**: Red and green text color and black background for hunks
 
 * **bold**: black text color and red and green background for hunks
+
 
 # Screenshots
 
