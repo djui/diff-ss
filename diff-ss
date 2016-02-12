@@ -52,6 +52,19 @@ config_theme           = {
 }
 
 
+def filter_non_printable(s):
+    return filter(lambda c: c in string.printable, s)
+
+
+def fixed(string, length, pad=' '):
+    """
+    Return a fixed size string (padded or trimmed).
+    """
+    s = string[:length]
+    s_clean = re.sub(r'\x1b[^m]*m', '', s)
+    return s + pad * (length - len(s_clean))
+
+
 def colorize(string, fgcolor, attr, bgcolor):
     return '\x1b[%s%s%sm%s\x1b[0m' % (attr, bgcolor, fgcolor, string)
 
@@ -70,8 +83,8 @@ def cprintln_center(string, length):
 
 def print_line(left, delimiter, right, width):
     width_left  = int(width / 2) - 1
-    width_right = width - width_left - 3
-    cprint(fixed(left['str'],    width_left),  left['fg'],      left['attr'],      left['bg'])
+    width_right = width - (width_left + len(delimiter))
+    cprint(fixed(left['str'], width_left),     left['fg'],      left['attr'],      left['bg'])
     cprint(delimiter['str'],                   delimiter['fg'], delimiter['attr'], delimiter['bg'])
     cprintln(fixed(right['str'], width_right), right['fg'],     right['attr'],     right['bg'])
 
@@ -102,14 +115,6 @@ def print_equal(string_equal, width):
     delimiter = {'str': config_delimiter_equal, 'fg': C.none, 'attr': C.regular, 'bg': C.none}
     right     = {'str': string_equal,           'fg': C.none, 'attr': C.regular, 'bg': C.none}
     print_line(left, delimiter, right, width)
-
-
-def fixed(string, length, pad=' '):
-    """
-    Return a fixed size string (padded or trimmed).
-    """
-    s = string[:length]
-    return s + pad * (length - len(s))
 
 
 def get_terminal_width():
