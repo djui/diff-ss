@@ -34,10 +34,10 @@ class C:
     underline = '4'
     blink     = '5'
 
-config_delimiter_old   = '   '  # ' - '
-config_delimiter_new   = '   '  # ' + '
-config_delimiter_both  = '   '  # ' ± '
-config_delimiter_equal = '   '  # '   '
+config_delimiter_old   = ' │ '  # ' ¦ ', '   ', ' - '
+config_delimiter_new   = ' │ '  # ' ¦ ', '   ', ' + '
+config_delimiter_both  = ' │ '  # ' ¦ ', '   ', ' ± '
+config_delimiter_equal = ' │ '  # ' ¦ ', '   ', ' = '
 config_frag            = C.fg_cyan
 config_header_fg       = C.fg_white
 config_header_attr     = C.bold
@@ -56,16 +56,16 @@ def colorize(string, fgcolor, attr, bgcolor):
     return '\x1b[%s%s%sm%s\x1b[0m' % (attr, bgcolor, fgcolor, string)
 
 
-def print_center(string, length):
-    cprintln(string[:length].center(length), config_frag, C.bold)
-
-
 def cprint(string, fgcolor, attr=C.regular, bgcolor=C.none):
     sys.stdout.write(colorize(string, fgcolor, attr, bgcolor))
 
 
 def cprintln(string, fgcolor, attr=C.regular, bgcolor=C.none):
     cprint(string + '\n', fgcolor, attr, bgcolor)
+
+
+def cprintln_center(string, length):
+    cprintln(string[:length].center(length), config_frag, C.bold)
 
 
 def print_line(left, delimiter, right, width):
@@ -108,7 +108,8 @@ def fixed(string, length, pad=' '):
     """
     Return a fixed size string (padded or trimmed).
     """
-    return string[:length].ljust(length, pad)
+    s = string[:length]
+    return s + pad * (length - len(s))
 
 
 def get_terminal_width():
@@ -167,8 +168,11 @@ def main(args):
         line = line.rstrip('\n').replace('\t', fixed('', 8))
 
         if line.startswith('diff '):
+            line_parts = line.split(' ')
             buf = flush(buf)
-            cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
+            cprintln(fixed('', width, '─'), config_header_fg, config_header_attr, config_header_bg)
+            print_both(line_parts[-2][1:], line_parts[-1][1:], width)
+            cprintln(fixed('', width, '─'), config_header_fg, config_header_attr, config_header_bg)
         elif line.startswith('new'):
             pass
         elif line.startswith('deleted'):
@@ -187,7 +191,7 @@ def main(args):
         elif line.startswith('@@'):
             buf = flush(buf)
             line_parts = re.split(r'^(@@ .*? @@)(.*)$', line)
-            print_center(line_parts[1], width)
+            cprintln_center(line_parts[1], width)
             if line_parts[2]:
                 print_equal(line_parts[2][1:], width)
         elif line.startswith('-'):
