@@ -4,6 +4,8 @@ Git does not support a side-by-side diff option. This script generates a
 side-by-side git-diff output for terminals. The script uses the maximum terminal
 width for the diff output.
 
+Works well with [diff-highlight](https://github.com/git/git/tree/master/contrib/diff-highlight).
+
 
 # Usage
 
@@ -20,6 +22,10 @@ The tool supports two modes:
 or
 
     $ git difftool --extcmd={PATH}/diff-ss
+
+or
+
+    alias -r gd = '_() { git diff $@ | diff-ss }; _'
 
 
 # Configuration
