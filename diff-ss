@@ -1,261 +1,210 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, re, subprocess
+import re
+import subprocess
+import sys
+
 
 class C:
-  """
-  Color enumerator
-  """
-  NONE      = ''
-  FG_BLACK  = ';30'
-  FG_RED    = ';31'
-  FG_GREEN  = ';32'
-  FG_YELLOW = ';33'
-  FG_BLUE   = ';34'
-  FG_PURPLE = ';35'
-  FG_CYAN   = ';36'
-  FG_WHITE  = ';37'
-  BG_BLACK  = ';40'
-  BG_RED    = ';41'
-  BG_GREEN  = ';42'
-  BG_YELLOW = ';43'
-  BG_BLUE   = ';44'
-  BG_PURPLE = ';45'
-  BG_CYAN   = ';46'
-  BG_WHITE  = ';47'
-  REGULAR   = '0'
-  BOLD      = '1'
-# ???       = '2'
-  REVERSE   = '3'
-  UNDERLINE = '4'
-  BLINK     = '5'
-
-CFG_THEME_NAME  = 'normal'
-CFG_THEME       = { 'none':   { 'bg':       C.NONE
-                              , 'left_fg':  C.NONE
-                              , 'left_bg':  C.NONE
-                              , 'right_fg': C.NONE
-                              , 'right_bg': C.NONE
-                              , 'both_fg':  C.NONE
-                              , 'both_bg':  C.NONE
-                              }
-                  , 'normal': { 'bg':       C.NONE
-                              , 'left_fg':  C.FG_RED
-                              , 'left_bg':  C.NONE
-                              , 'right_fg': C.FG_GREEN
-                              , 'right_bg': C.NONE
-                              , 'both_fg':  C.FG_YELLOW
-                              , 'both_bg':  C.NONE
-                              }
-                  , 'light':  { 'bg':       C.BG_WHITE
-                              , 'left_fg':  C.FG_RED
-                              , 'left_bg':  C.BG_WHITE
-                              , 'right_fg': C.FG_GREEN
-                              , 'right_bg': C.BG_WHITE
-                              , 'both_fg':  C.FG_YELLOW
-                              , 'both_bg':  C.BG_WHITE
-                              }
-                  , 'dark':   { 'bg':       C.BG_BLACK
-                              , 'left_fg':  C.FG_RED
-                              , 'left_bg':  C.BG_BLACK
-                              , 'right_fg': C.FG_GREEN
-                              , 'right_bg': C.BG_BLACK
-                              , 'both_fg':  C.FG_YELLOW
-                              , 'both_bg':  C.BG_BLACK
-                              }
-                  , 'bold':   { 'bg':       C.NONE
-                              , 'left_fg':  C.FG_BLACK
-                              , 'left_bg':  C.BG_RED
-                              , 'right_fg': C.FG_BLACK
-                              , 'right_bg': C.BG_GREEN
-                              , 'both_fg':  C.FG_BLACK
-                              , 'both_bg':  C.BG_YELLOW
-                              }
-                  }
-CFG_DEL_OLD     = '   '  # ' - '
-CFG_DEL_NEW     = '   '  # ' + '
-CFG_DEL_BOTH    = '   '  # ' ± '
-CFG_DEL_EQUAL   = '   '  # '   '
-CFG_HEADER_FG   = C.FG_WHITE
-CFG_HEADER_ATTR = C.BOLD
-CFG_HEADER_BG   = C.NONE
-CFG_FRAG        = C.FG_CYAN
-
-def main():
-  buf = []
-  for line in diffText():
-    # Expand tabs
-    line = line.rstrip('\n').replace('\t', fixed('', 8))
-
     if line.startswith('diff --git'):
-      # Flush buffer
-      for line in buf: printLeft(line[1:]); buf = []
-      cprintln(fixed(line, W), CFG_HEADER_FG, CFG_HEADER_ATTR, CFG_HEADER_BG)
-    elif line.startswith('index'):
-      cprintln(fixed(line, W), CFG_HEADER_FG, CFG_HEADER_ATTR, CFG_HEADER_BG)
-    elif line.startswith('---'):
-      cprintln(fixed(line, W), CFG_HEADER_FG, CFG_HEADER_ATTR, CFG_HEADER_BG)
-    elif line.startswith('+++'):
-      cprintln(fixed(line, W), CFG_HEADER_FG, CFG_HEADER_ATTR, CFG_HEADER_BG)
-    elif line.startswith('@@'):
-      # Flush buffer
-      for line in buf: printLeft(line[1:]); buf = []
-      lineParts = re.split(r'^(@@ .*? @@)(.*)$', line)
-      printCenter(lineParts[1])
-      if lineParts[2]:
-        printEqual(lineParts[2][1:])
-    elif line.startswith('-'):
-      # Buffer left lines to let them start same height as right lines
-      buf.append(line)
-    elif line.startswith('+'):
-      # Drain buffer one by one
-      if len(buf): printBoth(buf.pop(0)[1:], line[1:])
-      else:        printRight(line[1:])
-    elif line.startswith(' '):
-      # Flush buffer
-      for line in buf: printLeft(line[1:]); buf = []
-      printEqual(line[1:])
-    else:
-      cprintln('PARSE ERROR: %s' % line, C.FG_RED, C.BOLD)
-  # Flush buffer
-  for line in buf: printLeft(line[1:]); buf = []
+    """
+    Color enumerator.
+    """
+    none      = ''
+    fg_black  = ';30'
+    fg_red    = ';31'
+    fg_green  = ';32'
+    fg_yellow = ';33'
+    fg_blue   = ';34'
+    fg_purple = ';35'
+    fg_cyan   = ';36'
+    fg_white  = ';37'
+    bg_black  = ';40'
+    bg_red    = ';41'
+    bg_green  = ';42'
+    bg_yellow = ';43'
+    bg_blue   = ';44'
+    bg_purple = ';45'
+    bg_cyan   = ';46'
+    bg_white  = ';47'
+    regular   = '0'
+    bold      = '1'
+#   ???       = '2'
+    reverse   = '3'
+    underline = '4'
+    blink     = '5'
 
-def printLeft(stringLeft):
-  Left  = { 'str':  stringLeft
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['left_fg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['left_bg']
-          }
-  Del   = { 'str':  CFG_DEL_OLD
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['left_fg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['left_bg']
-          }
-  Right = { 'str':  ''
-          , 'fg':   C.NONE
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['bg']
-          }
-  printLine(Left, Del, Right)
+config_delimiter_old   = '   '  # ' - '
+config_delimiter_new   = '   '  # ' + '
+config_delimiter_both  = '   '  # ' ± '
+config_delimiter_equal = '   '  # '   '
+config_frag            = C.fg_cyan
+config_header_fg       = C.fg_white
+config_header_attr     = C.bold
+config_header_bg       = C.none
+config_theme_name      = 'normal'
+config_theme           = {
+    'none':   {'bg': C.none,     'left_fg':  C.none,     'left_bg': C.none,     'right_fg': C.none,     'right_bg': C.none,     'both_fg': C.none,      'both_bg': C.none},
+    'normal': {'bg': C.none,     'left_fg':  C.fg_red,   'left_bg': C.none,     'right_fg': C.fg_green, 'right_bg': C.none,     'both_fg': C.fg_yellow, 'both_bg': C.none},
+    'light':  {'bg': C.bg_white, 'left_fg':  C.fg_red,   'left_bg': C.bg_white, 'right_fg': C.fg_green, 'right_bg': C.bg_white, 'both_fg': C.fg_yellow, 'both_bg': C.bg_white},
+    'dark':   {'bg': C.bg_black, 'left_fg':  C.fg_red,   'left_bg': C.bg_black, 'right_fg': C.fg_green, 'right_bg': C.bg_black, 'both_fg': C.fg_yellow, 'both_bg': C.bg_black},
+    'bold':   {'bg': C.none,     'left_fg':  C.fg_black, 'left_bg': C.bg_red,   'right_fg': C.fg_black, 'right_bg': C.bg_green, 'both_fg': C.fg_black,  'both_bg': C.bg_yellow}
+}
 
-def printRight(stringRight):
-  Left  = { 'str':  ''
-          , 'fg':   C.NONE
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['bg']
-          }
-  Del   = { 'str':  CFG_DEL_NEW
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['right_fg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['right_bg']
-          }
-  Right = { 'str':  stringRight
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['right_fg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['right_bg']
-          }
-  printLine(Left, Del, Right)
-
-def printBoth(stringLeft, stringRight):
-  Left  = { 'str':  stringLeft
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['left_fg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['left_bg']
-          }
-  Del   = { 'str':  CFG_DEL_BOTH
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['both_bg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['both_bg']
-          }
-  Right = { 'str':  stringRight
-          , 'fg':   CFG_THEME[CFG_THEME_NAME]['right_fg']
-          , 'attr': C.REGULAR
-          , 'bg':   CFG_THEME[CFG_THEME_NAME]['right_bg']
-          }
-  printLine(Left, Del, Right)
-
-def printEqual(stringEqual):
-  Left  = { 'str':  stringEqual
-          , 'fg':   C.NONE
-          , 'attr': C.REGULAR
-          , 'bg':   C.NONE
-          }
-  Del   = { 'str':  CFG_DEL_EQUAL
-          , 'fg':   C.NONE
-          , 'attr': C.REGULAR
-          , 'bg':   C.NONE
-          }
-  Right = { 'str':  stringEqual
-          , 'fg':   C.NONE
-          , 'attr': C.REGULAR
-          , 'bg':   C.NONE
-          }
-  printLine(Left, Del, Right)
-
-def printLine(Left, Del, Right):
-  cprint(fixed(Left['str'],    W_LEFT),  Left['fg'],  Left['attr'],  Left['bg'])
-  cprint(Del['str'],                     Del['fg'],   Del['attr'],   Del['bg'])
-  cprintln(fixed(Right['str'], W_RIGHT), Right['fg'], Right['attr'], Right['bg'])
-
-def printCenter(string):
-  cprintln(string[:W].center(W), CFG_FRAG, C.BOLD)
-
-def cprintln(string, fgcolor, attr=C.REGULAR, bgcolor=C.NONE):
-  cprint(string+'\n', fgcolor, attr, bgcolor)
-
-def cprint(string, fgcolor, attr=C.REGULAR, bgcolor=C.NONE):
-  sys.stdout.write(colorize(string, fgcolor, attr, bgcolor))
 
 def colorize(string, fgcolor, attr, bgcolor):
-  return '\x1b[%s%s%sm%s\x1b[0m' % (attr, bgcolor, fgcolor, string)
+    return '\x1b[%s%s%sm%s\x1b[0m' % (attr, bgcolor, fgcolor, string)
+
+
+def print_center(string, length):
+    cprintln(string[:length].center(length), config_frag, C.bold)
+
+
+def cprint(string, fgcolor, attr=C.regular, bgcolor=C.none):
+    sys.stdout.write(colorize(string, fgcolor, attr, bgcolor))
+
+
+def cprintln(string, fgcolor, attr=C.regular, bgcolor=C.none):
+    cprint(string + '\n', fgcolor, attr, bgcolor)
+
+
+def print_line(left, delimiter, right, width):
+    width_left  = int(width / 2) - 1
+    width_right = width - width_left - 3
+    cprint(fixed(left['str'],    width_left),  left['fg'],      left['attr'],      left['bg'])
+    cprint(delimiter['str'],                   delimiter['fg'], delimiter['attr'], delimiter['bg'])
+    cprintln(fixed(right['str'], width_right), right['fg'],     right['attr'],     right['bg'])
+
+
+def print_left(string_left, width):
+    left      = {'str': string_left,          'fg': config_theme[config_theme_name]['left_fg'], 'attr': C.regular, 'bg': config_theme[config_theme_name]['left_bg']}
+    delimiter = {'str': config_delimiter_old, 'fg': config_theme[config_theme_name]['left_fg'], 'attr': C.regular, 'bg': config_theme[config_theme_name]['left_bg']}
+    right     = {'str': '',                   'fg': C.none,                                     'attr': C.regular, 'bg': config_theme[config_theme_name]['bg']}
+    print_line(left, delimiter, right, width)
+
+
+def print_right(string_right, width):
+    left      = {'str': '',                    'fg': C.none,                                      'attr': C.regular, 'bg': config_theme[config_theme_name]['bg']}
+    delimiter = {'str': config_delimiter_new,  'fg': config_theme[config_theme_name]['right_fg'], 'attr': C.regular, 'bg': config_theme[config_theme_name]['right_bg']}
+    right     = {'str': string_right,          'fg': config_theme[config_theme_name]['right_fg'], 'attr': C.regular, 'bg': config_theme[config_theme_name]['right_bg']}
+    print_line(left, delimiter, right, width)
+
+
+def print_both(string_left, string_right, width):
+    left      = {'str': string_left,           'fg': config_theme[config_theme_name]['left_fg'],  'attr': C.regular, 'bg': config_theme[config_theme_name]['left_bg']}
+    delimiter = {'str': config_delimiter_both, 'fg': config_theme[config_theme_name]['both_bg'],  'attr': C.regular, 'bg': config_theme[config_theme_name]['both_bg']}
+    right     = {'str': string_right,          'fg': config_theme[config_theme_name]['right_fg'], 'attr': C.regular, 'bg': config_theme[config_theme_name]['right_bg']}
+    print_line(left, delimiter, right, width)
+
+
+def print_equal(string_equal, width):
+    left      = {'str': string_equal,           'fg': C.none, 'attr': C.regular, 'bg': C.none}
+    delimiter = {'str': config_delimiter_equal, 'fg': C.none, 'attr': C.regular, 'bg': C.none}
+    right     = {'str': string_equal,           'fg': C.none, 'attr': C.regular, 'bg': C.none}
+    print_line(left, delimiter, right, width)
+
 
 def fixed(string, length, pad=' '):
-  """
-  Return a fixed size string (padded or trimmed).
-  """
-  return string[:length].ljust(length, pad)
+    """
+    Return a fixed size string (padded or trimmed).
+    """
+    return string[:length].ljust(length, pad)
 
-def diffText():
-  if len(sys.argv) > 2:
-    try:
-      # Use git diff itself/again to get the diff text
-      subprocess.check_output([ 'git', 'diff', '-u', '--no-color', '--no-ext-diff'
-                              , '--', sys.argv[1], sys.argv[2]
-                              ])
-    except subprocess.CalledProcessError as err:
-      # Ignore exception: 'diff' exists with 1 if files differ
-      return err.output.split('\n')
-  else:
-    return sys.stdin.readlines()
 
-def getTerminalWidth():
-  """
-  Return the terminal window size. It tries to retreive the information on the
-  follow order: Python magic > environment variables > resize > tput.
-  """
-  try:
-    import fcntl, termios, struct
-    return int(struct.unpack('hh', fcntl.ioctl(1, termios.TIOCGWINSZ, '1234'))[1])
-  except:
+def get_terminal_width():
+    """
+    Return the terminal window size. It tries to retreive the information on the
+    follow order: Python magic > environment variables > resize > tput.
+    """
     try:
-      import os
-      return int(os.environ['COLUMNS'])
+        import fcntl
+        import termios
+        import struct
+        return int(struct.unpack('hh', fcntl.ioctl(1, termios.TIOCGWINSZ, '1234'))[1])
     except:
-      try:
-        w = subprocess.check_output(['resize'])
-        s = re.split(r'COLUMNS=(.*?);', w)
-        return int(s[1])
-      except:
         try:
-          return int(subprocess.check_output(["tput", "cols"]))
+            import os
+            return int(os.environ['COLUMNS'])
         except:
-          return 80
+            try:
+                w = subprocess.check_output(['resize'])
+                s = re.split(r'COLUMNS=(.*?);', w)
+                return int(s[1])
+            except:
+                try:
+                    return int(subprocess.check_output(["tput", "cols"]))
+                except:
+                    return 80
 
-# Globals ...D'oh!
-W       = getTerminalWidth()
-W_LEFT  = int(W / 2) - 1
-W_RIGHT = W - W_LEFT - 3
+
+def diff_text(args):
+    if len(args) >= 2:
+        left = args[0]
+        right = args[1]
+
+        try:
+            # Use git diff itself/again to get the diff text
+            cmd = ['git', 'diff', '-u', '--no-color', '--no-ext-diff', '--', left, right]
+            subprocess.check_output(cmd)
+        except subprocess.CalledProcessError as err:
+            # Ignore exception: 'diff' exists with 1 if files differ
+            return err.output.split('\n')
+    else:
+        return sys.stdin.readlines()
+
+
+def main(args):
+    width = get_terminal_width()
+    buf = []
+
+    def flush(buf):
+        for line in buf:
+            print_left(line[1:], width)
+        return []
+
+    for line in diff_text(args):
+        # Expand tabs
+        line = line.rstrip('\n').replace('\t', fixed('', 8))
+
+            buf = flush(buf)
+            cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
+        elif line.startswith('index'):
+            # cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
+            pass
+        elif line.startswith('---'):
+            #if line != '--- /dev/null':
+            #    cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
+            pass
+        elif line.startswith('+++'):
+            #if line != '+++ /dev/null':
+            #    cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
+            pass
+        elif line.startswith('@@'):
+            buf = flush(buf)
+            line_parts = re.split(r'^(@@ .*? @@)(.*)$', line)
+            print_center(line_parts[1], width)
+            if line_parts[2]:
+                print_equal(line_parts[2][1:], width)
+        elif line.startswith('-'):
+            # Buffer left lines to let them start same height as right lines
+            buf.append(line)
+        elif line.startswith('+'):
+            # Drain buffer one by one
+            if len(buf):
+                print_both(buf.pop(0)[1:], line[1:], width)
+            else:
+                print_right(line[1:], width)
+        elif line.startswith(' '):
+            buf = flush(buf)
+            print_equal(line[1:], width)
+        else:
+            cprintln('PARSE ERROR: %s' % line, C.fg_red, C.bold)
+    flush(buf)
+
 
 if __name__ == '__main__':
-  main()
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except KeyboardInterrupt:
+        sys.exit(1)
