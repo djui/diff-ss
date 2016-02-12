@@ -169,6 +169,10 @@ def main(args):
 
             buf = flush(buf)
             cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
+        elif line.startswith('new'):
+            pass
+        elif line.startswith('deleted'):
+            pass
         elif line.startswith('index'):
             # cprintln(fixed(line, width), config_header_fg, config_header_attr, config_header_bg)
             pass
