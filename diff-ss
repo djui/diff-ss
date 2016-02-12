@@ -56,13 +56,22 @@ def filter_non_printable(s):
     return filter(lambda c: c in string.printable, s)
 
 
-def fixed(string, length, pad=' '):
+def fixed(string, width, pad=' '):
     """
     Return a fixed size string (padded or trimmed).
     """
-    s = string[:length]
+    s = string[:width]
     s_clean = re.sub(r'\x1b[^m]*m', '', s)
-    return s + pad * (length - len(s_clean))
+    return s + pad * (width - len(s_clean))
+
+
+def fixed_center(string, width, pad=' '):
+    """
+    Return a centered fixed size string (padded or trimmed).
+    """
+    width_left  = int(width / 2)
+    width_right = width - (width_left + len(string)) + 2
+    return pad * width_left + string + pad * width_right
 
 
 def colorize(string, fgcolor, attr, bgcolor):
@@ -175,9 +184,8 @@ def main(args):
         if line.startswith('diff '):
             line_parts = line.split(' ')
             buf = flush(buf)
-            cprintln(fixed('', width, '─'), config_header_fg, config_header_attr, config_header_bg)
+            cprintln(fixed_center('╤', width, '═'), config_header_fg, config_header_attr, config_header_bg)
             print_both(line_parts[-2][1:], line_parts[-1][1:], width)
-            cprintln(fixed('', width, '─'), config_header_fg, config_header_attr, config_header_bg)
         elif line.startswith('new'):
             pass
         elif line.startswith('deleted'):
@@ -196,6 +204,7 @@ def main(args):
         elif line.startswith('@@'):
             buf = flush(buf)
             line_parts = re.split(r'^(@@ .*? @@)(.*)$', line)
+            cprintln(fixed_center('┼', width, '─'), config_header_fg, config_header_attr, config_header_bg)
             cprintln_center(line_parts[1], width)
             if line_parts[2]:
                 print_equal(line_parts[2][1:], width)
